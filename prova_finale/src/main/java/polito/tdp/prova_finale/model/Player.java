@@ -91,6 +91,13 @@ public class Player {
 	public void setNationality(String nationality) {
 		this.nationality = nationality;
 	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return name+" "+overall+" "+position+" "+price;
+	}
+	
+	
 	
 	
 	

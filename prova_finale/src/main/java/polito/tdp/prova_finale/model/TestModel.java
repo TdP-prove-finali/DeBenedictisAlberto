@@ -6,6 +6,9 @@ public class TestModel {
 
 		Model model = new Model();
 
+		model.creaGrafo("4-3-3", 90, 4, "Gold - Rare", 80);
+		
+		
 	}
 
 }

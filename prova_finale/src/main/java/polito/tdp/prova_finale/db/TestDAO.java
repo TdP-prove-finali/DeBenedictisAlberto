@@ -1,5 +1,9 @@
 package polito.tdp.prova_finale.db;
 
+import java.util.List;
+
+import polito.tdp.prova_finale.model.Player;
+
 public class TestDAO {
 
 	public static void main(String[] args) {
@@ -10,6 +14,14 @@ public class TestDAO {
 		System.out.println(dao.getFormations());
 		System.out.println(dao.getQuality());
 		System.out.println(dao.getRuoli());
+		System.out.println(dao.getCoppie("4-3-3"));
+
+		List<Player> lista = dao.getPlayersByParameters(80, "Gold - Rare", "LB");
+
+		for (Player p : lista) {
+			System.out.println(p.toString() + "\n");
+		}
+
 	}
 
 }
