@@ -24,11 +24,11 @@ public class PlayersDAO {
 	 */
 	public List<Player> getPlayersByParameters(Integer overall, String quality, String ruolo) {
 
-		String sql = "select futbin_id as id, overall, position, ps4_last as price, player_name as name, player_extended_name as ext_name, quality,  club, league, nationality "
+		String sql = "select futbin_id as id, overall, position, price, player_name as name, player_extended_name as ext_name, quality,  club, league, nationality "
 				+ "from players " + "where quality = ? " + "AND overall = ? " + "AND origin = \"\" "
-				+ "AND position = ? " + "AND revision = \"Normal\" " + "AND ps4_last<> \"\" "
-				+ "AND (league = 'Premier League' " + "OR league = 'Serie A TIM' " + "OR league = 'LaLiga Santander' "
-				+ "OR league = 'Ligue 1 Conforama' " + "OR league = 'Bundesliga') " + "Order by ps4_last ASC";
+				+ "AND position = ? " + "AND revision = \"Normal\" " + "AND (league = 'Premier League' "
+				+ "OR league = 'Serie A TIM' " + "OR league = 'LaLiga Santander' " + "OR league = 'Ligue 1 Conforama' "
+				+ "OR league = 'Bundesliga') " + "Order by price ASC";
 
 		List<Player> result = new ArrayList<Player>();
 
