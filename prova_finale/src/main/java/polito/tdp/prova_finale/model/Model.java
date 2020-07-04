@@ -122,7 +122,8 @@ public class Model {
 
 		}
 
-		// ---------------------------------- fine della preparazione -----------------------------------------
+		// ---------------------------------- fine della preparazione
+		// -----------------------------------------
 
 		// Creo e inizializzo la soluzione parziale
 		// provo a metterci i vertici piuttosto c
@@ -168,18 +169,19 @@ public class Model {
 				System.out.println("carico i giocatori nel grafo:");
 				caricaGiocatori(parziale);
 				System.out.println("carico i pesi nel grafo");
-				//caricaPesi();
+				// caricaPesi();
 
-				//System.out.println("Intesa della squadra temporanea: " + getIntesaSquadra());
-				
-				// IL CALCOLO DELL'INTESA RISULTA PROBLEMATICO A CAUSA DI UN PROBLEMA NEL CARICO PESI
-				
-				//if (getIntesaSquadra() >= intesa) {
-					this.soluzione = new ArrayList<>(parziale);
-					trovata = true;
-					// a questo punto risetto tutti i player del grafo a null e i pesi a 2
+				// System.out.println("Intesa della squadra temporanea: " + getIntesaSquadra());
 
-				//}
+				// IL CALCOLO DELL'INTESA RISULTA PROBLEMATICO A CAUSA DI UN PROBLEMA NEL CARICO
+				// PESI
+
+				// if (getIntesaSquadra() >= intesa) {
+				this.soluzione = new ArrayList<>(parziale);
+				trovata = true;
+				// a questo punto risetto tutti i player del grafo a null e i pesi a 2
+
+				// }
 
 			}
 
@@ -208,6 +210,11 @@ public class Model {
 
 	}
 
+	/**
+	 * Carica la lista di giocatori come vertici del grafo scheletro
+	 * 
+	 * @param parziale
+	 */
 	public void caricaGiocatori(List<TeamPlayer> parziale) {
 
 		for (TeamPlayer tp : parziale) {
@@ -230,6 +237,7 @@ public class Model {
 	 */
 	public void caricaPesi() {
 
+		// set di controllo in debug per verificare presenza di giocatori NULL
 		Set<TeamPlayer> giocatoriCaricati = this.grafo.vertexSet();
 		// scorro la lista degli archi, a ogni arco aggiungo il peso
 		for (DefaultWeightedEdge e : this.grafo.edgeSet()) {
@@ -245,7 +253,8 @@ public class Model {
 	}
 
 	/**
-	 * Ripristina la sitazione iniziale
+	 * Ripristina la sitazione iniziale dei pesi, ovvero inserisco dei pesi fittizi
+	 * in ogni arco (non essenziale dato che li sovrascrivo ogni volta)
 	 */
 	public void resetPesi() {
 
@@ -258,6 +267,9 @@ public class Model {
 
 	}
 
+	/**
+	 * Riporto tutti i vertici del grafico con il campo giocatore a null
+	 */
 	public void svuotaGrafo() {
 
 		for (TeamPlayer vertice : this.grafo.vertexSet()) {
@@ -267,6 +279,11 @@ public class Model {
 
 	}
 
+	/**
+	 * Somma l'intesa di tutti i componenti della squadra
+	 * 
+	 * @return
+	 */
 	public Integer getIntesaSquadra() {
 
 		Integer intesa = 0;
@@ -279,6 +296,15 @@ public class Model {
 		return intesa;
 	}
 
+	/**
+	 * Funzione principale per il calcolo dell'intesa. In base alla somma dei pesi
+	 * degli archi di ogni vertice, stabilisco un valore corrispondente (la
+	 * conversione effettuata segue lo stesso criterio di quella utilizzata nel
+	 * gioco).
+	 * 
+	 * @param tp
+	 * @return
+	 */
 	public Integer getIntesaGiocatore(TeamPlayer tp) {
 
 		Integer pesoTot = 0;
@@ -299,6 +325,14 @@ public class Model {
 
 	}
 
+	/**
+	 * Stabilisce il peso dell'arco tra due giocatori, in base al tipo e al numero
+	 * di attributi che hanno in comune
+	 * 
+	 * @param p1
+	 * @param p2
+	 * @return
+	 */
 	public Integer getPeso(Player p1, Player p2) {
 
 		if (p1.getClub().equals(p2.getClub())
@@ -314,26 +348,17 @@ public class Model {
 
 	}
 
-	public void setPesi() {
+	/**
+	 * Cerca, per ogni giocatore, una versione più economica (con lo stesso
+	 * campionato o della stessa nazionalità), se ha successo, controlla che i
+	 * vincoli siano rispettati anche con quel giocatore (aggiornando i vertici del
+	 * grafo e i suoi pesi). Se non li soddisfa, ripristina il grafo soluzione
+	 */
+	public void riduciCosto(List<TeamPlayer> parziale) {
 
-		for (DefaultWeightedEdge e : this.grafo.edgeSet()) {
+		// scorro i giocatori della squadra creata
+		for (TeamPlayer p : parziale) {
 
-			Player p1 = this.grafo.getEdgeSource(e).getPlayer();
-			Player p2 = this.grafo.getEdgeTarget(e).getPlayer();
-
-			// Ora vedo cosa hanno in comune
-			// se sono dello stesso club, oppure dello stesso campionato e stessa
-			// nazionalità, peso 1
-			if (p1.getClub().equals(p2.getClub())
-					|| (p1.getLeague().equals(p2.getLeague()) && p1.getNationality().equals(p2.getNationality()))) {
-				this.grafo.setEdgeWeight(e, 1);
-				// se sono dello stesso campionato o della stessa nazionalità, peso 0
-			} else if (p1.getLeague().equals(p2.getLeague()) || p1.getNationality().equals(p2.getNationality())) {
-				this.grafo.setEdgeWeight(e, 0);
-				// se non hanno niente in comune, peso 0
-			} else {
-				this.grafo.setEdgeWeight(e, 0);
-			}
 		}
 
 	}
@@ -354,6 +379,26 @@ public class Model {
 		}
 
 		return campionati.size();
+	}
+
+	/**
+	 * Calcola l'overall della squadra, ottenuto come media aritmetica degli overall
+	 * dei singoli giocatori
+	 * 
+	 * @param parziale
+	 * @return
+	 */
+	public int overallSquadra(List<Player> parziale) {
+
+		Integer somma = 0;
+
+		for (Player p : parziale) {
+			somma += p.getOverall();
+		}
+
+		Integer result = somma / 11;
+
+		return result;
 	}
 
 	/**
