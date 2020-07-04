@@ -26,9 +26,7 @@ public class PlayersDAO {
 
 		String sql = "select futbin_id as id, overall, position, price, player_name as name, player_extended_name as ext_name, quality,  club, league, nationality "
 				+ "from players " + "where quality = ? " + "AND overall = ? " + "AND origin = \"\" "
-				+ "AND position = ? " + "AND revision = \"Normal\" " + "AND (league = 'Premier League' "
-				+ "OR league = 'Serie A TIM' " + "OR league = 'LaLiga Santander' " + "OR league = 'Ligue 1 Conforama' "
-				+ "OR league = 'Bundesliga') " + "Order by price ASC";
+				+ "AND position = ? " + "AND revision = \"Normal\" " + "Order by price ASC";
 
 		List<Player> result = new ArrayList<Player>();
 
