@@ -8,8 +8,9 @@ public class TestModel {
 
 		Model model = new Model();
 
-		List<TeamPlayer> soluzione = model.creaGrafo("4-3-3", 60, 3, "Gold - Non-Rare", 76);
+		List<TeamPlayer> soluzione = model.creaGrafo("4-3-3", 10, 3, "Gold - Non-Rare", 76);
 		
+		System.out.println(soluzione);
 		
 	}
 

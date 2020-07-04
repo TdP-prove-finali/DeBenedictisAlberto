@@ -60,6 +60,14 @@ public class TeamPlayer implements Comparable<TeamPlayer>{
 	
 		return this.getRuolo().getId().compareTo(o.getRuolo().getId());
 	}
+
+	@Override
+	public String toString() {
+		return player +" "+ruolo;
+	}
+	
+	
+	
 	
 	
 
