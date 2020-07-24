@@ -8,9 +8,19 @@ public class TestModel {
 
 		Model model = new Model();
 
-		List<TeamPlayer> soluzione = model.creaGrafo("4-3-3", 10, 3, "Gold - Non-Rare", 76);
+		List<TeamPlayer> soluzione = model.creaGrafo("4-3-3", 50, 1, "Bronze - Non-Rare", 60);
 		
-		System.out.println(soluzione);
+		System.out.println("\n\n\n");
+		
+		if(soluzione!= null) {
+		
+		for(TeamPlayer tp: soluzione) {
+			System.out.println(tp);
+		}
+		
+		}else {
+			System.out.println("Hai imposto dei vincoli troppo restrittivi, non è stato possibile trovare una squadra.");
+		}
 		
 	}
 

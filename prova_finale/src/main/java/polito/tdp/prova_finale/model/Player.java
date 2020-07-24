@@ -94,7 +94,7 @@ public class Player {
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return name+" "+overall+" "+position+" "+price;
+		return name+" "+overall+" "+price;
 	}
 	
 	

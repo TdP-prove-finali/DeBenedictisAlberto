@@ -35,7 +35,7 @@ public class TeamPlayer implements Comparable<TeamPlayer>{
 		return result;
 	}
 
-	// Due teamPlayers sono uguali se hanno lo stesso ruolo: viene usato per controllare se ho già aggiunto il giocatore al grafo
+	// Due teamPlayers sono uguali se hanno lo stesso id_ruolo: viene usato per controllare se ho già aggiunto il giocatore al grafo
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -60,7 +60,6 @@ public class TeamPlayer implements Comparable<TeamPlayer>{
 	
 		return this.getRuolo().getId().compareTo(o.getRuolo().getId());
 	}
-
 	@Override
 	public String toString() {
 		return player +" "+ruolo;

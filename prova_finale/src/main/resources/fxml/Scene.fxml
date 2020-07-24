@@ -50,7 +50,7 @@
               </rowConstraints>
                <children>
                   <Label text="Intesa minima della squadra: " GridPane.rowIndex="1" />
-                  <Label text="Numero max campionati diversi:" GridPane.rowIndex="2" />
+                  <Label text="Numero min di campionati diversi:" GridPane.rowIndex="2" />
                   <Label text="Qualità dei giocatori:" GridPane.rowIndex="3" />
                   <ChoiceBox fx:id="choiceQuality" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                   <TextField fx:id="txtIntesa" maxWidth="60.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />

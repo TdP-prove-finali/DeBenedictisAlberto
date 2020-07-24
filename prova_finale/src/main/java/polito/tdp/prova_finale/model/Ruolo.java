@@ -9,7 +9,7 @@ public class Ruolo implements Comparable<Ruolo>{
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return id + " " + name + " - " + description;
+		return name + " - " + description;
 	}
 
 	public Integer getId() {
@@ -76,6 +76,8 @@ public class Ruolo implements Comparable<Ruolo>{
 		// TODO Auto-generated method stub
 		return this.getId().compareTo(o.getId());
 	}
+	
+	
 	
 	
 

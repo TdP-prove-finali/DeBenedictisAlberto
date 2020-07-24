@@ -143,6 +143,11 @@ public class PlayersDAO {
 
 	}
 
+	/**
+	 * Ritorna le formazioni da caricare nel menù a tendina
+	 * 
+	 * @return
+	 */
 	public List<String> getFormations() {
 
 		String sql = "select distinct formation " + "from links";

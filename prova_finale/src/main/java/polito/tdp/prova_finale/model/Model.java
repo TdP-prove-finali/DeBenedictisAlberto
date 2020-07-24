@@ -24,8 +24,6 @@ public class Model {
 
 	Map<String, List<Player>> mappaRuoli;
 
-	List<List<Player>> listaListe;
-
 	List<TeamPlayer> vertici;
 
 	boolean trovata;
@@ -36,7 +34,7 @@ public class Model {
 
 	}
 
-	public List<TeamPlayer> creaGrafo(String formation, Integer intesa, Integer maxLeagues, String quality,
+	public List<TeamPlayer> creaGrafo(String formation, Integer intesa, Integer minLeagues, String quality,
 			Integer overall) {
 
 		// carico la mappa dei ruoli
@@ -68,6 +66,8 @@ public class Model {
 			TeamPlayer p1 = new TeamPlayer(null, r1);
 			TeamPlayer p2 = new TeamPlayer(null, r2);
 
+			// AGGIUNGO VERTICI E ARCHI
+
 			// controllo se il grafo ha già questi vertici, altrimenti li aggiungo
 			if (!this.grafo.containsVertex(p1)) {
 				grafo.addVertex(p1);
@@ -89,7 +89,6 @@ public class Model {
 		vertici = new ArrayList<>(this.grafo.vertexSet());
 		Collections.sort(vertici);
 
-		listaListe = new ArrayList<>();
 		// Preparo una mappa contenente i giocatori che posso mettere
 		// in ogni ruolo in base ai vincoli dell'utente
 		mappaRuoli = new TreeMap<String, List<Player>>();
@@ -106,8 +105,11 @@ public class Model {
 				giocatoriRuolo = this.dao.getPlayersByParameters(overall, quality, nomeRuolo);
 
 				// PROBLEMI GIOCATORI NON TROVATI
-				if (giocatoriRuolo.size() == 0) {
+				
+				// cerco giocatori con overall crescente fin quando non ne trovo 1
+				while (giocatoriRuolo.size() == 0 && overall <= 93) {
 					giocatoriRuolo = this.dao.getPlayersByParameters(overall + 1, quality, nomeRuolo);
+					overall++;
 				}
 				if (giocatoriRuolo.size() == 0) {
 					System.out.println("Non è stato possibile trovare giocatori che rispettino i requisiti nel ruolo: "
@@ -132,7 +134,7 @@ public class Model {
 
 		trovata = false;
 
-		ricorsione(parziale, 0, squadra, intesa, maxLeagues);
+		ricorsione(parziale, 0, squadra, intesa, minLeagues, overall);
 
 		return soluzione;
 
@@ -148,7 +150,7 @@ public class Model {
 	 * @param maxLeagues
 	 */
 	private void ricorsione(List<TeamPlayer> parziale, int livello, List<Player> squadra, Integer intesa,
-			Integer maxLeagues) {
+			Integer minLeagues, Integer overall) {
 
 		// se ho trovato la soluzione risalgo i livelli della ricorsione
 		if (trovata) {
@@ -158,37 +160,41 @@ public class Model {
 		// CASO TERMINALE
 		// se ho 11 giocatori
 		if (livello == 11) {
+			
+			// CONTROLLO NUM CAMPIONATI
+			if (numeroCampionati(parziale) >= minLeagues) {
 
-			// controllo il numero di campionati
-			if (numeroCampionati(parziale) >= maxLeagues) {
-
-				// controllo sull'intesa della squadra
-
-				// carico i giocatori nel grafo, calcolo tutti i pesi, calcolo l'intesa
-				System.out.println("Controllo campionati superato: " + numeroCampionati(parziale) + "\n");
-				System.out.println("carico i giocatori nel grafo:");
+				// carico giocatori e pesi nel grafo
 				caricaGiocatori(parziale);
-				System.out.println("carico i pesi nel grafo");
-				// caricaPesi();
+				caricaPesi();
 
-				// System.out.println("Intesa della squadra temporanea: " + getIntesaSquadra());
+				// CONTROLLO OVERALL
+				if (overallSquadra(squadra) >= overall) {
 
-				// IL CALCOLO DELL'INTESA RISULTA PROBLEMATICO A CAUSA DI UN PROBLEMA NEL CARICO
-				// PESI
+					// CONTROLLO INTESA
+					if (getIntesaSquadra() >= intesa) {
+						
+						System.out.println("Controllo campionati superato: " + numeroCampionati(parziale) + "");
+						System.out.println("Controllo overall superato: " + overallSquadra(squadra));
+						System.out.println("Controllo intesa della squadra superato: " + getIntesaSquadra());
 
-				// if (getIntesaSquadra() >= intesa) {
-				this.soluzione = new ArrayList<>(parziale);
-				trovata = true;
-				// a questo punto risetto tutti i player del grafo a null e i pesi a 2
-
-				// }
-
+						this.soluzione = new ArrayList<>(parziale);
+						trovata = true;
+						// a questo punto risetto tutti i player del grafo a null e i pesi a 10
+						resetGiocatoriPesi();
+					}
+					// }
+				}
 			}
 
 			return;
 		}
 
 		// creazione di soluzioni parziali con lista:
+
+		// avanzando di livello, da 0 a 10, prendo uno dei giocatori presenti nella
+		// lista per
+		// il ruolo attuale
 		//
 		for (Player p : this.mappaRuoli.get(vertici.get(livello).getRuolo().getName())) {
 
@@ -199,7 +205,7 @@ public class Model {
 				TeamPlayer tp = new TeamPlayer(p, vertici.get(livello).getRuolo());
 				parziale.add(tp);
 				squadra.add(p);
-				ricorsione(parziale, livello + 1, squadra, intesa, maxLeagues);
+				ricorsione(parziale, livello + 1, squadra, intesa, minLeagues, overall);
 
 				// backtracking
 				parziale.remove(tp);
@@ -217,18 +223,26 @@ public class Model {
 	 */
 	public void caricaGiocatori(List<TeamPlayer> parziale) {
 
+		// scorro tutti i giocatori: per ogni giocatore, scorro tutti gli archi e vedo
+		// se l'id del ruolo del teamplayer (vertice)
+		// è uguale all'id del ruolo del TeamPlayer
+
 		for (TeamPlayer tp : parziale) {
 
-			for (TeamPlayer vertice : this.grafo.vertexSet()) {
+			for (DefaultWeightedEdge e : this.grafo.edgeSet()) {
 
-				// appena trovo la corrispondenza, riempio il vertice con il giocatore
-				if (tp.getRuolo().getName().equals(vertice.getRuolo().getName()) && vertice.getPlayer() == null) {
+				if (this.grafo.getEdgeSource(e).getRuolo().equals(tp.getRuolo())) {
 
-					vertice.setPlayer(tp.getPlayer());
+					this.grafo.getEdgeSource(e).setPlayer(tp.getPlayer());
 				}
+
+				if (this.grafo.getEdgeTarget(e).getRuolo().equals(tp.getRuolo())) {
+
+					this.grafo.getEdgeTarget(e).setPlayer(tp.getPlayer());
+				}
+
 			}
 		}
-
 	}
 
 	/**
@@ -237,9 +251,10 @@ public class Model {
 	 */
 	public void caricaPesi() {
 
-		// set di controllo in debug per verificare presenza di giocatori NULL
-		Set<TeamPlayer> giocatoriCaricati = this.grafo.vertexSet();
 		// scorro la lista degli archi, a ogni arco aggiungo il peso
+
+		// System.out.println("Coppie di giocatori vicine:\n");
+
 		for (DefaultWeightedEdge e : this.grafo.edgeSet()) {
 
 			// uno dei due giocatori è null per un certo arco
@@ -254,27 +269,18 @@ public class Model {
 
 	/**
 	 * Ripristina la sitazione iniziale dei pesi, ovvero inserisco dei pesi fittizi
-	 * in ogni arco (non essenziale dato che li sovrascrivo ogni volta)
+	 * in ogni arco (non essenziale dato che li sovrascrivo ogni volta) e metto i
+	 * giocatori come NULL (il grafo ritorna ad essere solo lo scheletro)
 	 */
-	public void resetPesi() {
+	public void resetGiocatoriPesi() {
 
 		for (DefaultWeightedEdge e : this.grafo.edgeSet()) {
 			;
 
+			this.grafo.getEdgeSource(e).setPlayer(null);
+			this.grafo.getEdgeTarget(e).setPlayer(null);
 			this.grafo.setEdgeWeight(e, 10);
 
-		}
-
-	}
-
-	/**
-	 * Riporto tutti i vertici del grafico con il campo giocatore a null
-	 */
-	public void svuotaGrafo() {
-
-		for (TeamPlayer vertice : this.grafo.vertexSet()) {
-
-			vertice.setPlayer(null);
 		}
 
 	}
