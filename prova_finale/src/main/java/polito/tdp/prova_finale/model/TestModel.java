@@ -8,20 +8,55 @@ public class TestModel {
 
 		Model model = new Model();
 
-		List<TeamPlayer> soluzione = model.creaGrafo("4-3-3", 50, 1, "Bronze - Non-Rare", 60);
-		
+		List<TeamPlayer> soluzione = model.creaGrafo("3-4-3", 80, 3, "Gold - Rare", 75);
+
 		System.out.println("\n\n\n");
+
+		if (soluzione != null) {
+
+			for (TeamPlayer tp : soluzione) {
+				System.out.println(tp);
+			}
+
+			System.out.println("\nPrezzo: " + model.getPrezzoSol() + "\n");
+
+		} else {
+			System.out
+					.println("Hai imposto dei vincoli troppo restrittivi, non è stato possibile trovare una squadra.");
+		}
+
 		
-		if(soluzione!= null) {
 		
-		for(TeamPlayer tp: soluzione) {
-			System.out.println(tp);
+		
+		
+		System.out.println("\nProvo a ridurre il costo: ");
+
+		// PROVA RIDUCI COSTO
+		
+		
+		List<TeamPlayer> soluzione_economica = model.riduciCosto(soluzione);
+
+		if (soluzione_economica.size() > 0) {
+
+			for (TeamPlayer tp : soluzione_economica) {
+				System.out.println(tp);
+			}
+
+			// stampo prezzo
+			System.out.println("\nTotale: " + model.getEcoOverall() + "\nIntesa: " + model.getEcoIntesa() + "\nPrezzo: "
+					+ model.getEcoPrezzo());
+
+		} else {
+			System.out.println("Non è stato possibile trovare un'alternativa più economica");
 		}
 		
-		}else {
-			System.out.println("Hai imposto dei vincoli troppo restrittivi, non è stato possibile trovare una squadra.");
-		}
-		
+	
+
+		// PROVA REPLACE
+		/*
+		 * String prova = "prova - Alberto"; prova = prova.replace("prova", "oro");
+		 * System.out.println(prova);
+		 */
 	}
 
 }

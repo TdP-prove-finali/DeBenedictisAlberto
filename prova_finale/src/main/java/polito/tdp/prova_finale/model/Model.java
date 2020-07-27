@@ -26,8 +26,32 @@ public class Model {
 
 	List<TeamPlayer> vertici;
 
+	// VARIABILI PER REQUISITI
+
+	Integer min_GiocatoriPerRuolo;
+	Integer intesa_richiesta;
+	Integer overall_richiesto;
+	Integer num_camp_richiesto;
+
+	// VARIABILI PER LA SOLUZIONE
+
 	boolean trovata;
 	List<TeamPlayer> soluzione;
+	List<Player> squadraSol;
+	int intesaSol;
+	int numCampionatiSol;
+	int overallSol;
+	int prezzoSol;
+
+	int trovate = 0;
+
+	// VARIABILI PER COSTO RIDOTTO
+	int sostituzioni_eff;
+	List<TeamPlayer> ecoSol;
+	List<Player> ecoSquadra;
+	Integer ecoIntesa;
+	Integer ecoOverall;
+	Integer ecoPrezzo;
 
 	public Model() {
 		dao = new PlayersDAO();
@@ -36,6 +60,17 @@ public class Model {
 
 	public List<TeamPlayer> creaGrafo(String formation, Integer intesa, Integer minLeagues, String quality,
 			Integer overall) {
+
+		if (formation.equals("4-4-2")) {
+			this.min_GiocatoriPerRuolo = 2;
+		} else {
+			this.min_GiocatoriPerRuolo = 3;
+		}
+
+		// prendo alcuni dei parametri
+		this.intesa_richiesta = intesa;
+		this.overall_richiesto = overall;
+		this.num_camp_richiesto = minLeagues;
 
 		// carico la mappa dei ruoli
 		ruoliIdMap = new HashMap<>();
@@ -93,6 +128,10 @@ public class Model {
 		// in ogni ruolo in base ai vincoli dell'utente
 		mappaRuoli = new TreeMap<String, List<Player>>();
 
+		// -----------------------------------
+
+		System.out.println("Ottengo i giocatori per ogni ruolo: \n");
+
 		for (TeamPlayer p : vertici) {
 
 			String nomeRuolo = p.getRuolo().getName();
@@ -105,34 +144,61 @@ public class Model {
 				giocatoriRuolo = this.dao.getPlayersByParameters(overall, quality, nomeRuolo);
 
 				// PROBLEMI GIOCATORI NON TROVATI
-				
-				// cerco giocatori con overall crescente fin quando non ne trovo 1
-				while (giocatoriRuolo.size() == 0 && overall <= 93) {
-					giocatoriRuolo = this.dao.getPlayersByParameters(overall + 1, quality, nomeRuolo);
-					overall++;
+
+				// cerco giocatori con overall crescente fin quando non ne trovo almeno 3
+				// (uso valori di overall e qualità "incrementati" per agevolare la ricerca)
+				int incr_overall = overall;
+				String incr_quality = quality;
+				while (giocatoriRuolo.size() < this.min_GiocatoriPerRuolo && incr_overall <= 93) {
+
+					// Accordiamo qualità e overall per trovare i risultati
+					if (incr_overall == 64) {
+						incr_quality = quality.replace("Bronze", "Silver");
+					} else if (incr_overall == 74) {
+						incr_quality = quality.replace("Silver", "Gold");
+					} else if (incr_overall > 83) {
+						incr_quality = quality.replace("Non-Rare", "Rare");
+					}
+
+					List<Player> giocatoriDaAggiungere = new ArrayList<>();
+
+					giocatoriDaAggiungere = this.dao.getPlayersByParameters(incr_overall, incr_quality, nomeRuolo);
+					incr_overall++;
+
+					if (giocatoriDaAggiungere.size() > 0) {
+						for (Player daAgg : giocatoriDaAggiungere) {
+							giocatoriRuolo.add(daAgg);
+						}
+					}
 				}
-				if (giocatoriRuolo.size() == 0) {
-					System.out.println("Non è stato possibile trovare giocatori che rispettino i requisiti nel ruolo: "
-							+ nomeRuolo);
+
+				// fin quando non ho almeno 3 giocatori per ruolo, cerco quelli con overall
+				// maggiore
+				if (giocatoriRuolo.size() < this.min_GiocatoriPerRuolo) {
+					System.out.println("Non è stato possibile trovare abbastanza giocatori nel ruolo " + nomeRuolo);
 					return null;
 				}
 
 				// riempio la mappa che segna le corrispondenze tra ruolo ed elenco giocatori
 				// sarà questo l'elenco di giocatori su cui farò la ricorsione
 				mappaRuoli.put(nomeRuolo, giocatoriRuolo);
+				System.out.println("Numero giocatori per il ruolo " + nomeRuolo + ": " + giocatoriRuolo.size());
 			}
 
 		}
 
-		// ---------------------------------- fine della preparazione
-		// -----------------------------------------
+		// ----------------------------------
+		// fine della preparazione
+		// ----------------------------------
 
 		// Creo e inizializzo la soluzione parziale
-		// provo a metterci i vertici piuttosto c
 		List<TeamPlayer> parziale = new ArrayList<>();
 		List<Player> squadra = new ArrayList<>();
 
-		trovata = false;
+		this.trovata = false;
+		this.intesaSol = 0;
+		this.numCampionatiSol = 0;
+		this.overallSol = 0;
 
 		ricorsione(parziale, 0, squadra, intesa, minLeagues, overall);
 
@@ -160,7 +226,10 @@ public class Model {
 		// CASO TERMINALE
 		// se ho 11 giocatori
 		if (livello == 11) {
-			
+			// DEBUG
+			// trovate++;
+			// System.out.println(trovate);
+
 			// CONTROLLO NUM CAMPIONATI
 			if (numeroCampionati(parziale) >= minLeagues) {
 
@@ -173,18 +242,24 @@ public class Model {
 
 					// CONTROLLO INTESA
 					if (getIntesaSquadra() >= intesa) {
-						
+
+						this.numCampionatiSol = numeroCampionati(parziale);
+						this.overallSol = overallSquadra(squadra);
+						this.intesaSol = getIntesaSquadra();
+						this.soluzione = new ArrayList<>(parziale);
+						this.squadraSol = new ArrayList<>(squadra);
+						this.prezzoSol = calcolaPrezzo(parziale);
+						trovata = true;
+
 						System.out.println("Controllo campionati superato: " + numeroCampionati(parziale) + "");
 						System.out.println("Controllo overall superato: " + overallSquadra(squadra));
 						System.out.println("Controllo intesa della squadra superato: " + getIntesaSquadra());
 
-						this.soluzione = new ArrayList<>(parziale);
-						trovata = true;
-						// a questo punto risetto tutti i player del grafo a null e i pesi a 10
-						resetGiocatoriPesi();
 					}
 					// }
 				}
+				// a questo punto risetto tutti i player del grafo a null e i pesi a 10
+				resetGiocatoriPesi();
 			}
 
 			return;
@@ -214,6 +289,17 @@ public class Model {
 			}
 		}
 
+	}
+
+	public Integer calcolaPrezzo(List<TeamPlayer> squadra) {
+
+		Integer prezzoTot = 0;
+
+		for (TeamPlayer tp : squadra) {
+			prezzoTot += tp.getPlayer().getPrice();
+		}
+
+		return prezzoTot;
 	}
 
 	/**
@@ -296,7 +382,10 @@ public class Model {
 
 		for (TeamPlayer tp : this.grafo.vertexSet()) {
 
-			intesa += getIntesaGiocatore(tp);
+			int intesaGiocatore = getIntesaGiocatore(tp);
+			// System.out.println("intesa " + tp + " ----> " + intesaGiocatore);
+
+			intesa += intesaGiocatore;
 		}
 
 		return intesa;
@@ -314,6 +403,7 @@ public class Model {
 	public Integer getIntesaGiocatore(TeamPlayer tp) {
 
 		Integer pesoTot = 0;
+		Integer grado = this.grafo.degreeOf(tp);
 
 		for (TeamPlayer vicino : Graphs.neighborListOf(this.grafo, tp)) {
 
@@ -321,9 +411,11 @@ public class Model {
 			pesoTot += pesoArco;
 		}
 
+		// System.out.println("\n\nGiocatore " + tp + "\npeso Tot: " + pesoTot);
+
 		if (pesoTot >= 0) {
 			return 10;
-		} else if (pesoTot == -1) {
+		} else if (pesoTot == -1 || (pesoTot == -2 && grado > 2) || (pesoTot == -3 && grado > 4)) {
 			return 7;
 		} else {
 			return 4;
@@ -341,10 +433,11 @@ public class Model {
 	 */
 	public Integer getPeso(Player p1, Player p2) {
 
-		if (p1.getClub().equals(p2.getClub())
+		if (p1.getClub().equals(p2.getClub()) && p1.getNationality().equals(p2.getNationality())) {
+			return 2;
+		} else if (p1.getClub().equals(p2.getClub())
 				|| (p1.getLeague().equals(p2.getLeague()) && p1.getNationality().equals(p2.getNationality()))) {
 			return 1;
-			// se sono dello stesso campionato o della stessa nazionalità, peso 0
 		} else if (p1.getLeague().equals(p2.getLeague()) || p1.getNationality().equals(p2.getNationality())) {
 			return 0;
 			// se non hanno niente in comune, peso -1
@@ -354,27 +447,6 @@ public class Model {
 
 	}
 
-	/**
-	 * Cerca, per ogni giocatore, una versione più economica (con lo stesso
-	 * campionato o della stessa nazionalità), se ha successo, controlla che i
-	 * vincoli siano rispettati anche con quel giocatore (aggiornando i vertici del
-	 * grafo e i suoi pesi). Se non li soddisfa, ripristina il grafo soluzione
-	 */
-	public void riduciCosto(List<TeamPlayer> parziale) {
-
-		// scorro i giocatori della squadra creata
-		for (TeamPlayer p : parziale) {
-
-		}
-
-	}
-
-	/**
-	 * Conta il numero di campionati diversi presente in una lista di giocatori
-	 * 
-	 * @param parziale
-	 * @return
-	 */
 	public int numeroCampionati(List<TeamPlayer> parziale) {
 
 		Set<String> campionati = new HashSet<>();
@@ -396,16 +468,160 @@ public class Model {
 	 */
 	public int overallSquadra(List<Player> parziale) {
 
-		Integer somma = 0;
+		// TODO: aggiungere correction factor
+
+		Double somma = 0.0;
 
 		for (Player p : parziale) {
 			somma += p.getOverall();
 		}
 
-		Integer result = somma / 11;
+		Double media_parz = somma / 11;
 
-		return result;
+		Integer res = Math.toIntExact(Math.round(media_parz));
+		
+		return res;
+		
+		
+		/*
+		// OPZIONE CORRECTION FACTOR
+		// correction factor
+		Double cf = 0.0;
+
+		for (Player p : parziale) {
+			if (p.getOverall() > media_parz) {
+				cf += (p.getOverall() - media_parz);
+			}
+		}
+
+		Integer totale = Math.toIntExact(Math.round((somma + cf) / 11));
+
+		return totale;
+		
+		*/
 	}
+
+	/**
+	 * Cerca, per ogni giocatore, una versione più economica (con lo stesso
+	 * campionato o della stessa nazionalità), se ha successo, controlla che i
+	 * vincoli siano rispettati anche con quel giocatore (aggiornando i vertici del
+	 * grafo e i suoi pesi). Se non li soddisfa, ripristina il grafo soluzione
+	 */
+	public List<TeamPlayer> riduciCosto(List<TeamPlayer> soluzione) {
+
+		this.sostituzioni_eff = 0;
+		this.ecoIntesa = 0;
+		this.ecoOverall = 0;
+		this.ecoSol = new ArrayList<>();
+		this.ecoSquadra = new ArrayList<>();
+
+		// copiamo i giocatori in una lista da iterare, così posso modificare parziale
+		List<TeamPlayer> sol_iniziale = new ArrayList<>(soluzione);
+
+		List<TeamPlayer> prova;
+		List<Player> provaSquadra = new ArrayList<>(this.squadraSol);
+
+		// PER OGNI GIOCATORE DELLA SOLUZIONE INIZIALE
+		for (TeamPlayer p : sol_iniziale) {
+
+			// se non ho ancora trovato una soluzione più economica, la lista di giocatori
+			// più recente è la soluzione iniziale, viceversa è quella "eco"
+
+			if (this.ecoSol.size() == 0) {
+				prova = new ArrayList<>(this.soluzione);
+				provaSquadra = new ArrayList<>(this.squadraSol);
+			} else {
+				prova = new ArrayList<>(this.ecoSol);
+				provaSquadra = new ArrayList<>(this.ecoSquadra);
+			}
+
+			Ruolo ruolo_corr = p.getRuolo();
+
+			// cerco un'alternativa più economica del giocatore:
+
+			// lista dei giocatori da provare
+			// (giocatori simili al sostituendo, ma con overall minore)
+			List<Player> sostituti = this.dao.getSostituto(overall_richiesto - 1, p.getPlayer().getQuality(),
+					p.getRuolo().getName(), p.getPlayer().getPrice());
+
+			// se ho trovato dei sostituti per il ruolo corrente
+			if (sostituti.size() > 0) {
+
+				// RIMUOVO IL GIOCATORE CORRENTE
+				prova.remove(p);
+				provaSquadra.remove(p.getPlayer());
+
+				// PROVO A SOSTITUIRLO (SE HO SUCCESSO, SALVO LA LISTA DI GIOCATORI)
+				for (Player sos : sostituti) {
+
+					// se non è già presente
+					if (!provaSquadra.contains(sos)) {
+
+						TeamPlayer giocatoreInProva = new TeamPlayer(sos, ruolo_corr);
+
+						// creo la lista di p e tp su cui fare gli stessi controlli che facciamo per le
+						// soluzioni
+						prova.add(giocatoreInProva);
+						provaSquadra.add(sos);
+
+						// CONTROLLO CAMPIONATI
+						if (numeroCampionati(prova) >= this.num_camp_richiesto) {
+
+							// CONTROLLO OVERALL
+							if (overallSquadra(provaSquadra) >= this.overall_richiesto) {
+
+								// carico giocatori e pesi nel grafo
+								caricaGiocatori(prova);
+								caricaPesi();
+
+								// CONTROLLO INTESA
+								if (getIntesaSquadra() >= this.intesa_richiesta) {
+
+									// SALVO LA SOLUZIONE AGGIORNATA NEL MODEL IN UNA VARIABILE DIVERSA
+
+									this.ecoSquadra = new ArrayList<>(provaSquadra);
+									this.ecoSol = new ArrayList<>(prova);
+									Collections.sort(this.ecoSol);
+									this.ecoIntesa = getIntesaSquadra();
+									this.ecoOverall = overallSquadra(provaSquadra);
+
+									this.ecoPrezzo = calcolaPrezzo(prova);
+
+									// ripulisco il grafo, che torna con giocatori vuoti e archi con pesi default
+									resetGiocatoriPesi();
+
+									// segno la sostituzione
+									this.sostituzioni_eff++;
+
+									prova.remove(giocatoreInProva);
+									provaSquadra.remove(sos);
+
+									break;
+
+								}
+							}
+						}
+						// fine prova giocatore (se la sostituzione ha avuto successo, la soluzione è
+						// aggiornata)
+						if (prova.size() == 11 && provaSquadra.size() == 11)
+							prova.remove(giocatoreInProva);
+						provaSquadra.remove(sos);
+
+					}
+				}
+			}
+
+		}
+
+		return this.ecoSol;
+	}
+
+	/**
+	 * Conta il numero di campionati diversi presente in una lista di giocatori
+	 * 
+	 * @param parziale
+	 * @return
+	 */
 
 	/**
 	 * Ritorna una lista delle formazioni possibili
@@ -423,6 +639,22 @@ public class Model {
 	 */
 	public List<String> getQuality() {
 		return this.dao.getQuality();
+	}
+
+	public int getEcoIntesa() {
+		return this.ecoIntesa;
+	}
+
+	public int getPrezzoSol() {
+		return this.prezzoSol;
+	}
+
+	public int getEcoPrezzo() {
+		return this.ecoPrezzo;
+	}
+
+	public int getEcoOverall() {
+		return this.ecoOverall;
 	}
 
 }

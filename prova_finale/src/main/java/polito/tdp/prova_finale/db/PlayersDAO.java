@@ -12,6 +12,56 @@ import polito.tdp.prova_finale.model.Player;
 import polito.tdp.prova_finale.model.Ruolo;
 
 public class PlayersDAO {
+	
+	
+/**
+ * Restituisce una lista di giocatori con determinate caratteristiche, prelevati per
+ * sostituire un componente della rosa con uno simile, ma più economico
+ * 
+ * @param overall
+ * @param quality
+ * @param ruolo
+ * @param prezzo
+ * @return
+ */
+	public List<Player> getSostituto(Integer overall, String quality, String ruolo, Integer prezzo) {
+
+		String sql = "select futbin_id as id, overall, position, price, player_name as name, player_extended_name as ext_name, quality,  club, league, nationality "
+				+ "from players " + "where quality = ? " + "AND overall = ? " + "AND origin = \"\" "
+				+ "AND position = ? " + "AND revision = \"Normal\" " + "AND price < ? " + "Order by price ASC";
+
+		List<Player> result = new ArrayList<Player>();
+
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+
+			// metto i parametri
+			st.setString(1, quality);
+			st.setInt(2, overall);
+			st.setString(3, ruolo);
+			st.setInt(4, prezzo);
+
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				Player p = new Player(res.getInt("id"), res.getInt("overall"), res.getString("position"),
+						res.getInt("price"), res.getString("name"), res.getString("ext_name"), res.getString("quality"),
+						res.getString("club"), res.getString("league"), res.getString("nationality"));
+
+				result.add(p);
+			}
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+	
 
 	/**
 	 * Data la qualità dei giocatori, l'overall e il ruolo, determina una lista di

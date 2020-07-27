@@ -16,7 +16,7 @@ public class TestDAO {
 		System.out.println(dao.getRuoli());
 		System.out.println(dao.getCoppie("4-3-3"));
 
-		List<Player> lista = dao.getPlayersByParameters(80, "Gold - Rare", "LB");
+		List<Player> lista = dao.getPlayersByParameters(78, "Gold - Non-Rare", "RM");
 
 		for (Player p : lista) {
 			System.out.println(p.toString() + "\n");
