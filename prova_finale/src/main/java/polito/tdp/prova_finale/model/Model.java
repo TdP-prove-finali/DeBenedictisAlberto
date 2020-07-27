@@ -482,23 +482,6 @@ public class Model {
 		
 		return res;
 		
-		
-		/*
-		// OPZIONE CORRECTION FACTOR
-		// correction factor
-		Double cf = 0.0;
-
-		for (Player p : parziale) {
-			if (p.getOverall() > media_parz) {
-				cf += (p.getOverall() - media_parz);
-			}
-		}
-
-		Integer totale = Math.toIntExact(Math.round((somma + cf) / 11));
-
-		return totale;
-		
-		*/
 	}
 
 	/**
