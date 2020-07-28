@@ -98,10 +98,10 @@ public class FXMLController {
 					List<TeamPlayer> ecoSol = model.riduciCosto(soluzione, overall, quality, minLeagues, intesa);
 
 					if (ecoSol == null) {
-						txtResult.appendText("\nNon è stato possibile ridurre il costo della soluzione corrente");
+						txtResult.setText("Non è stato possibile ridurre il costo della soluzione corrente");
 						return;
 					} else {
-						txtResult.appendText("\nE' stata trovata una soluzione più economica, ");
+						txtResult.setText("E' stata trovata una soluzione più economica, ");
 
 						int sostituzioni = model.getSostituzioni();
 
@@ -111,21 +111,29 @@ public class FXMLController {
 							txtResult.appendText("effettuando le seguente sostituzioni:\n");
 						}
 
+						int risparmioTot = 0;
+
 						// dichiaro le differenze
 						for (int i = 0; i < 11; i++) {
 
 							Player p_vecchio = soluzione.get(i).getPlayer();
 							Player p_nuovo = ecoSol.get(i).getPlayer();
 
+							int risparmio = p_vecchio.getPrice() - p_nuovo.getPrice();
+
+							risparmioTot += risparmio;
+
 							if (!p_vecchio.equals(p_nuovo)) {
 								txtResult.appendText("- " + p_nuovo.getName() + " al posto di " + p_vecchio.getName()
-										+ " nel ruolo " + p_vecchio.getPosition() + "\n");
+										+ " nel ruolo " + p_vecchio.getPosition() + ", risparmiando " + risparmio
+										+ " crediti\n");
 							}
 						}
 						txtResult.appendText("\n");
 
 						txtResult.appendText("Totale: " + model.getEcoOverall() + "\n");
-						txtResult.appendText("Intesa: " + model.getEcoIntesa() + "\n\n");
+						txtResult.appendText("Intesa: " + model.getEcoIntesa() + "\n");
+						txtResult.appendText("Risparmio totale: " + risparmioTot + " crediti\n\n");
 
 						for (TeamPlayer tp : ecoSol) {
 							txtResult.appendText(String.format("%-5s %-30s %d %-20s %d\n", tp.getRuolo().getName(),
@@ -257,7 +265,7 @@ public class FXMLController {
 			choiceLeagues.getItems().add(i);
 		}
 
-		for (int i = 10; i <= 18; i++) {
+		for (int i = 10; i <= 17; i++) {
 			choiceIntesa.getItems().add(5 * i);
 		}
 
