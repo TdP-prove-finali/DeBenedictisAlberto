@@ -6,14 +6,17 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="polito.tdp.prova_finale.FXMLController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="polito.tdp.prova_finale.FXMLController">
    <top>
       <Label text="Tool Sfide Creazione Rosa" BorderPane.alignment="CENTER">
          <BorderPane.margin>
@@ -32,51 +35,63 @@
                   <Font size="18.0" />
                </font>
                <VBox.margin>
-                  <Insets left="5.0" top="10.0" />
+                  <Insets bottom="15.0" left="10.0" top="10.0" />
                </VBox.margin>
             </Label>
-            <GridPane>
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="296.0" minWidth="10.0" prefWidth="191.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="405.0" minWidth="10.0" prefWidth="404.0" />
-              </columnConstraints>
-              <rowConstraints>
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints maxHeight="40.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
-                  <RowConstraints maxHeight="40.0" minHeight="10.0" prefHeight="21.0" vgrow="SOMETIMES" />
-              </rowConstraints>
+            <HBox prefHeight="185.0" prefWidth="800.0">
                <children>
-                  <Label text="Intesa minima della squadra: " GridPane.rowIndex="1" />
-                  <Label text="Numero min di campionati diversi:" GridPane.rowIndex="2" />
-                  <Label text="Qualità dei giocatori:" GridPane.rowIndex="3" />
-                  <ChoiceBox fx:id="choiceQuality" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <TextField fx:id="txtIntesa" maxWidth="60.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <Button fx:id="btnTrova" mnemonicParsing="false" onAction="#doTrova" text="Trova Squadra" GridPane.rowIndex="5">
-                     <GridPane.margin>
-                        <Insets top="30.0" />
-                     </GridPane.margin>
-                  </Button>
-                  <Button fx:id="btnCosto" mnemonicParsing="false" onAction="#doRiduciCosto" text="Riduci Costo" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                     <GridPane.margin>
-                        <Insets top="30.0" />
-                     </GridPane.margin>
-                  </Button>
-                  <Label text="Overall dei giocatori:" GridPane.rowIndex="4" />
-                  <Label text="Modulo:" />
-                  <ChoiceBox fx:id="choiceModulo" prefWidth="150.0" GridPane.columnIndex="1" />
-                  <ChoiceBox fx:id="choiceLeagues" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextField fx:id="txtOverall" maxWidth="60.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <GridPane>
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="296.0" minWidth="10.0" prefWidth="219.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="405.0" minWidth="10.0" prefWidth="194.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="40.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="40.0" minHeight="10.0" prefHeight="21.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label text="Intesa minima della squadra: " GridPane.rowIndex="1" />
+                        <Label text="Numero min di campionati diversi:" GridPane.rowIndex="2" />
+                        <Label text="Qualità dei giocatori:" GridPane.rowIndex="3" />
+                        <ChoiceBox fx:id="choiceQuality" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Button fx:id="btnTrova" mnemonicParsing="false" onAction="#doTrova" text="TROVA SQUADRA" GridPane.rowIndex="5">
+                           <GridPane.margin>
+                              <Insets top="30.0" />
+                           </GridPane.margin>
+                        </Button>
+                        <Button fx:id="btnCosto" mnemonicParsing="false" onAction="#doRiduciCosto" text="RIDUCI COSTO" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                           <GridPane.margin>
+                              <Insets top="30.0" />
+                           </GridPane.margin>
+                        </Button>
+                        <Label text="Overall dei giocatori:" GridPane.rowIndex="4" />
+                        <Label text="Modulo:" />
+                        <ChoiceBox fx:id="choiceModulo" prefWidth="150.0" GridPane.columnIndex="1" />
+                        <ChoiceBox fx:id="choiceLeagues" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <TextField fx:id="txtOverall" maxWidth="60.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <ChoiceBox fx:id="choiceIntesa" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     </children>
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </GridPane>
+                  <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../logo%20fifa.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets left="45.0" top="10.0" />
+                     </HBox.margin>
+                  </ImageView>
                </children>
+            </HBox>
+            <TextArea fx:id="txtResult" prefHeight="300.0" prefWidth="190.0">
                <VBox.margin>
-                  <Insets bottom="20.0" left="5.0" top="10.0" />
-               </VBox.margin>
-            </GridPane>
-            <TextArea fx:id="txtResult" prefHeight="150.0" prefWidth="190.0">
-               <VBox.margin>
-                  <Insets left="10.0" right="10.0" top="25.0" />
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="25.0" />
                </VBox.margin>
             </TextArea>
          </children>

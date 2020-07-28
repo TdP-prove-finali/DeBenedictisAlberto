@@ -167,7 +167,9 @@ public class Model {
 
 					if (giocatoriDaAggiungere.size() > 0) {
 						for (Player daAgg : giocatoriDaAggiungere) {
-							giocatoriRuolo.add(daAgg);
+							if (!giocatoriRuolo.contains(daAgg)) {
+								giocatoriRuolo.add(daAgg);
+							}
 						}
 					}
 				}
@@ -202,7 +204,7 @@ public class Model {
 
 		ricorsione(parziale, 0, squadra, intesa, minLeagues, overall);
 
-		return soluzione;
+		return this.soluzione;
 
 	}
 
@@ -221,71 +223,73 @@ public class Model {
 		// se ho trovato la soluzione risalgo i livelli della ricorsione
 		if (trovata) {
 			return;
-		}
+		} else {
 
-		// CASO TERMINALE
-		// se ho 11 giocatori
-		if (livello == 11) {
-			// DEBUG
-			// trovate++;
-			// System.out.println(trovate);
+			// CASO TERMINALE
+			// se ho 11 giocatori
+			if (livello == 11) {
+				// DEBUG
+				// trovate++;
+				// System.out.println(trovate);
 
-			// CONTROLLO NUM CAMPIONATI
-			if (numeroCampionati(parziale) >= minLeagues) {
+				// CONTROLLO NUM CAMPIONATI
+				if (numeroCampionati(parziale) >= minLeagues) {
 
-				// carico giocatori e pesi nel grafo
-				caricaGiocatori(parziale);
-				caricaPesi();
+					// carico giocatori e pesi nel grafo
+					caricaGiocatori(parziale);
+					caricaPesi();
 
-				// CONTROLLO OVERALL
-				if (overallSquadra(squadra) >= overall) {
+					// CONTROLLO OVERALL
+					if (overallSquadra(squadra) >= overall) {
 
-					// CONTROLLO INTESA
-					if (getIntesaSquadra() >= intesa) {
+						// CONTROLLO INTESA
+						if (getIntesaSquadra() >= intesa) {
 
-						this.numCampionatiSol = numeroCampionati(parziale);
-						this.overallSol = overallSquadra(squadra);
-						this.intesaSol = getIntesaSquadra();
-						this.soluzione = new ArrayList<>(parziale);
-						this.squadraSol = new ArrayList<>(squadra);
-						this.prezzoSol = calcolaPrezzo(parziale);
-						trovata = true;
+							this.numCampionatiSol = numeroCampionati(parziale);
+							this.overallSol = overallSquadra(squadra);
+							this.intesaSol = getIntesaSquadra();
 
-						System.out.println("Controllo campionati superato: " + numeroCampionati(parziale) + "");
-						System.out.println("Controllo overall superato: " + overallSquadra(squadra));
-						System.out.println("Controllo intesa della squadra superato: " + getIntesaSquadra());
+							this.soluzione = new ArrayList<>(parziale);
+							this.squadraSol = new ArrayList<>(squadra);
+							this.prezzoSol = calcolaPrezzo(parziale);
+							trovata = true;
 
+							System.out.println("Controllo campionati superato: " + numeroCampionati(parziale));
+							System.out.println("Controllo overall superato: " + overallSquadra(squadra));
+							System.out.println("Controllo intesa della squadra superato: " + getIntesaSquadra());
+
+						}
+						// }
 					}
-					// }
+					// a questo punto risetto tutti i player del grafo a null e i pesi a 10
+					resetGiocatoriPesi();
 				}
-				// a questo punto risetto tutti i player del grafo a null e i pesi a 10
-				resetGiocatoriPesi();
+
+				return;
 			}
 
-			return;
-		}
+			// creazione di soluzioni parziali con lista:
 
-		// creazione di soluzioni parziali con lista:
+			// avanzando di livello, da 0 a 10, prendo uno dei giocatori presenti nella
+			// lista per
+			// il ruolo attuale
 
-		// avanzando di livello, da 0 a 10, prendo uno dei giocatori presenti nella
-		// lista per
-		// il ruolo attuale
-		//
-		for (Player p : this.mappaRuoli.get(vertici.get(livello).getRuolo().getName())) {
+			for (Player p : this.mappaRuoli.get(vertici.get(livello).getRuolo().getName())) {
 
-			// se il giocatore non è già in squadra
-			if (!squadra.contains(p)) {
+				// se il giocatore non è già in squadra
+				if (!squadra.contains(p)) {
 
-				// faccio ricorsione sul livello più basso
-				TeamPlayer tp = new TeamPlayer(p, vertici.get(livello).getRuolo());
-				parziale.add(tp);
-				squadra.add(p);
-				ricorsione(parziale, livello + 1, squadra, intesa, minLeagues, overall);
+					// faccio ricorsione sul livello più basso
+					TeamPlayer tp = new TeamPlayer(p, vertici.get(livello).getRuolo());
+					parziale.add(tp);
+					squadra.add(p);
+					ricorsione(parziale, livello + 1, squadra, intesa, minLeagues, overall);
 
-				// backtracking
-				parziale.remove(tp);
-				squadra.remove(p);
+					// backtracking
+					parziale.remove(tp);
+					squadra.remove(p);
 
+				}
 			}
 		}
 
@@ -479,9 +483,9 @@ public class Model {
 		Double media_parz = somma / 11;
 
 		Integer res = Math.toIntExact(Math.round(media_parz));
-		
+
 		return res;
-		
+
 	}
 
 	/**
@@ -490,7 +494,8 @@ public class Model {
 	 * vincoli siano rispettati anche con quel giocatore (aggiornando i vertici del
 	 * grafo e i suoi pesi). Se non li soddisfa, ripristina il grafo soluzione
 	 */
-	public List<TeamPlayer> riduciCosto(List<TeamPlayer> soluzione) {
+	public List<TeamPlayer> riduciCosto(List<TeamPlayer> soluzione, Integer overall, String quality, Integer minLeagues,
+			Integer intesa) {
 
 		this.sostituzioni_eff = 0;
 		this.ecoIntesa = 0;
@@ -524,8 +529,8 @@ public class Model {
 
 			// lista dei giocatori da provare
 			// (giocatori simili al sostituendo, ma con overall minore)
-			List<Player> sostituti = this.dao.getSostituto(overall_richiesto - 1, p.getPlayer().getQuality(),
-					p.getRuolo().getName(), p.getPlayer().getPrice());
+			List<Player> sostituti = this.dao.getSostituto(overall - 1, quality, p.getRuolo().getName(),
+					p.getPlayer().getPrice());
 
 			// se ho trovato dei sostituti per il ruolo corrente
 			if (sostituti.size() > 0) {
@@ -548,17 +553,17 @@ public class Model {
 						provaSquadra.add(sos);
 
 						// CONTROLLO CAMPIONATI
-						if (numeroCampionati(prova) >= this.num_camp_richiesto) {
+						if (numeroCampionati(prova) >= minLeagues) {
 
 							// CONTROLLO OVERALL
-							if (overallSquadra(provaSquadra) >= this.overall_richiesto) {
+							if (overallSquadra(provaSquadra) >= overall) {
 
 								// carico giocatori e pesi nel grafo
 								caricaGiocatori(prova);
 								caricaPesi();
 
 								// CONTROLLO INTESA
-								if (getIntesaSquadra() >= this.intesa_richiesta) {
+								if (getIntesaSquadra() >= intesa) {
 
 									// SALVO LA SOLUZIONE AGGIORNATA NEL MODEL IN UNA VARIABILE DIVERSA
 
@@ -624,12 +629,29 @@ public class Model {
 		return this.dao.getQuality();
 	}
 
-	public int getEcoIntesa() {
-		return this.ecoIntesa;
+	// GETTER SOLUZIONE INIZIALE
+
+	public List<TeamPlayer> getSoluzione() {
+		return this.soluzione;
 	}
 
 	public int getPrezzoSol() {
 		return this.prezzoSol;
+	}
+
+	// GETTER PRIMA SOLUZIONE
+	public int getOverallSol() {
+		return this.overallSol;
+	}
+
+	public int getIntesaSol() {
+		return this.intesaSol;
+	}
+
+	// GETTER DELLA SOLUZIONE PIU' ECONOMICA
+
+	public int getEcoIntesa() {
+		return this.ecoIntesa;
 	}
 
 	public int getEcoPrezzo() {
@@ -638,6 +660,10 @@ public class Model {
 
 	public int getEcoOverall() {
 		return this.ecoOverall;
+	}
+
+	public int getSostituzioni() {
+		return this.sostituzioni_eff;
 	}
 
 }

@@ -62,7 +62,7 @@ public class TeamPlayer implements Comparable<TeamPlayer>{
 	}
 	@Override
 	public String toString() {
-		return player +" "+ruolo;
+		return ruolo +" - "+player;
 	}
 	
 	

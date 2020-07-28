@@ -1,6 +1,6 @@
 package polito.tdp.prova_finale.model;
 
-public class Ruolo implements Comparable<Ruolo>{
+public class Ruolo implements Comparable<Ruolo> {
 
 	private Integer id;
 	private String name;
@@ -9,7 +9,7 @@ public class Ruolo implements Comparable<Ruolo>{
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return name + " - " + description;
+		return name + " (" + description + ")";
 	}
 
 	public Integer getId() {
@@ -43,9 +43,8 @@ public class Ruolo implements Comparable<Ruolo>{
 		this.description = description;
 	}
 
-	
 	// Due ruoli sono uguali se hanno lo stesso ID
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -76,9 +75,5 @@ public class Ruolo implements Comparable<Ruolo>{
 		// TODO Auto-generated method stub
 		return this.getId().compareTo(o.getId());
 	}
-	
-	
-	
-	
 
 }
